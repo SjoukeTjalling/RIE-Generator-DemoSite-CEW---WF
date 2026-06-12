@@ -320,7 +320,8 @@
   }
 
   .field-group input,
-  .field-group textarea{
+  .field-group textarea,
+  .field-group select{
     width:100%;
     background: rgba(8,36,42,0.55);
     border:1px solid var(--line);
@@ -331,6 +332,16 @@
     padding:12px 14px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     resize: vertical;
+  }
+
+  .field-group select{
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239FC4C2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor:pointer;
   }
 
   .field-group textarea{
@@ -344,7 +355,8 @@
   }
 
   .field-group input:focus,
-  .field-group textarea:focus{
+  .field-group textarea:focus,
+  .field-group select:focus{
     outline:none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(95,216,208,0.14);
@@ -598,10 +610,10 @@
       </div>
 
       <ul>
-        <li><span class="drop"></span>Introductie met klant, projectomschrijving, looptijd en locatie</li>
+        <li><span class="drop"></span>Introductie met klant, projectomschrijving en looptijd</li>
         <li><span class="drop"></span>Methodiek &amp; risicoclassificatie (Fine &amp; Kinney)</li>
         <li><span class="drop"></span>Algemene Demosite-risico's (H2S, vallen, elektra, verkeer, etc.)</li>
-        <li><span class="drop"></span>Projectspecifieke PFAS-/laboratoriumrisico's</li>
+        <li><span class="drop"></span>Projectspecifieke PFAS-/laboratoriumrisico's (P1–P8), plus optioneel een eigen risico P9</li>
         <li><span class="drop"></span>Borging, studentenparagraaf en aanbevelingen</li>
         <li><span class="drop"></span>Ondertekenblok — namen, datum en paraaf blijven open</li>
       </ul>
@@ -657,6 +669,66 @@
           <textarea id="projectomschrijving" placeholder="Beschrijf het onderzoek of project op de Demosite: doel, scope, betrokken installaties en werkzaamheden..." required></textarea>
         </div>
 
+        <div class="field-group">
+          <label for="risicoP9">Specifiek project risico — beschrijving <span class="hint">komt als P9 in de risicotabel</span></label>
+          <textarea id="risicoP9" placeholder="Beschrijf kort een projectspecifiek risico (gevaar / blootstelling) voor dit project..."></textarea>
+        </div>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label for="kansP9">Kans <span class="hint">P9</span></label>
+            <select id="kansP9">
+              <option value="">— kies kans —</option>
+              <option value="1">1 — Onwaarschijnlijk</option>
+              <option value="2">2 — Mogelijk</option>
+              <option value="3">3 — Waarschijnlijk</option>
+              <option value="4">4 — Vrij zeker</option>
+              <option value="5">5 — Zeker</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="ernstP9">Ernst <span class="hint">P9</span></label>
+            <select id="ernstP9">
+              <option value="">— kies ernst —</option>
+              <option value="1">1 — Verwaarloosbaar</option>
+              <option value="2">2 — Klein</option>
+              <option value="3">3 — Matig</option>
+              <option value="4">4 — Ernstig</option>
+              <option value="5">5 — Catastrofaal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="maatregelP9">Beheersmaatregel <span class="hint">bron — collectief — individueel — PBM</span></label>
+          <textarea id="maatregelP9" placeholder="Beschrijf de beheersmaatregel(en) voor dit risico..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <label for="restrisicoP9">Restrisico <span class="hint">na beheersmaatregel</span></label>
+          <select id="restrisicoP9">
+            <option value="">— kies restrisico —</option>
+            <option value="1 (groen)">1 (groen)</option>
+            <option value="2 (groen)">2 (groen)</option>
+            <option value="3 (groen)">3 (groen)</option>
+            <option value="4 (groen)">4 (groen)</option>
+            <option value="5 (geel)">5 (geel)</option>
+            <option value="6 (geel)">6 (geel)</option>
+            <option value="7 (geel)">7 (geel)</option>
+            <option value="8 (geel)">8 (geel)</option>
+            <option value="9 (geel)">9 (geel)</option>
+            <option value="10 (geel)">10 (geel)</option>
+            <option value="11 (geel)">11 (geel)</option>
+            <option value="12 (geel)">12 (geel)</option>
+            <option value="13 (rood)">13 (rood)</option>
+            <option value="14 (rood)">14 (rood)</option>
+            <option value="15 (rood)">15 (rood)</option>
+            <option value="16 (rood)">16 (rood)</option>
+            <option value="20 (rood)">20 (rood)</option>
+            <option value="25 (rood)">25 (rood)</option>
+          </select>
+        </div>
+
         <div class="row-2">
           <div class="field-group">
             <label for="looptijd">Looptijd project <span class="hint">periode</span></label>
@@ -665,17 +737,6 @@
           <div class="field-group">
             <label for="projectnummer">Projectnummer <span class="hint">optioneel</span></label>
             <input type="text" id="projectnummer" placeholder="Bijv. 2026.P.0005">
-          </div>
-        </div>
-
-        <div class="row-2">
-          <div class="field-group">
-            <label for="locatie">Locatie op Demosite <span class="hint">onderzoeksplaats</span></label>
-            <input type="text" id="locatie" placeholder="Bijv. Demosite RWZI Leeuwarden, Greunsweg 78">
-          </div>
-          <div class="field-group">
-            <label for="verantwoordelijke">Verantwoordelijke namens Gebruiker <span class="hint">naam &amp; organisatie</span></label>
-            <input type="text" id="verantwoordelijke" placeholder="Bijv. Dhr. Gosse Hoekstra (Gemeente Leeuwarden)">
           </div>
         </div>
 
@@ -889,8 +950,6 @@ function buildContent(b, data){
     ["Contactpersoon", data.contactpersoon],
     ["Projectnummer", data.projectnummer || "[niet opgegeven]"],
     ["Looptijd project", data.looptijd],
-    ["Locatie", data.locatie || "Demosite RWZI Leeuwarden, Greunsweg 78, Leeuwarden"],
-    ["Verantwoordelijke namens Gebruiker", data.verantwoordelijke || "[in te vullen]"],
     ["PhD-onderzoeker / projectleider CEW", ""],
     ["Datum opstellen RI&E", ""],
     ["Geaccordeerd door KAM-Wetterskip op", ""],
@@ -1019,6 +1078,21 @@ function buildContent(b, data){
     return `${score-8} (geel)`;
   };
 
+  const p9Rows = [];
+  if(data.risicoP9 && data.kansP9 && data.ernstP9){
+    const kans9 = parseInt(data.kansP9, 10);
+    const ernst9 = parseInt(data.ernstP9, 10);
+    const score9 = kans9 * ernst9;
+    const rest9 = data.restrisicoP9 || "";
+    const highlights9 = [{col:4, color: scoreColor(score9)}];
+    const restScore9 = restScoreNum(rest9);
+    if(restScore9 !== null) highlights9.push({col:6, color: scoreColor(restScore9)});
+    p9Rows.push({
+      cells:[{text:"P9"},{text:data.risicoP9},{text:kans9},{text:ernst9},{text:score9},{text:data.maatregelP9 || ""},{text:rest9}],
+      highlights: highlights9
+    });
+  }
+
   b.table(riskCols, projectRisicos.map(([nr,risico,kans,ernst,maatregel]) => {
     const score = kans*ernst;
     const rest = restrisico(score);
@@ -1026,7 +1100,7 @@ function buildContent(b, data){
     const highlights = [{col:4, color: scoreColor(score)}];
     if(restScore !== null) highlights.push({col:6, color: scoreColor(restScore)});
     return { cells:[{text:nr},{text:risico},{text:kans},{text:ernst},{text:score},{text:maatregel},{text:rest}], highlights };
-  }).concat([
+  }).concat(p9Rows).concat([
     { cells:[{text:"P_..."},{text:"[verder in te vullen per project]"},{text:""},{text:""},{text:""},{text:""},{text:""}] }
   ]));
 
@@ -1067,7 +1141,7 @@ function buildContent(b, data){
   b.table(
     [{label:"Rol", width:0.32},{label:"Naam", width:0.30},{label:"Datum", width:0.15},{label:"Handtekening", width:0.23}],
     [
-      {cells:[{text:"Verantwoordelijke namens Gebruiker"},{text:data.verantwoordelijke || "[in te vullen]"},{text:""},{text:""}]},
+      {cells:[{text:"Verantwoordelijke namens Gebruiker"},{text:""},{text:""},{text:""}]},
       {cells:[{text:"PhD-onderzoeker / projectleider CEW"},{text:""},{text:""},{text:""}]},
       {cells:[{text:"KAM-Wetterskip — accordering"},{text:""},{text:""},{text:""}]},
       {cells:[{text:"Voorzitter Werkgroep — eindcontrole"},{text:""},{text:""},{text:""}]},
@@ -1114,8 +1188,11 @@ document.getElementById("rieForm").addEventListener("submit", async (e) => {
     projectomschrijving: document.getElementById("projectomschrijving").value.trim(),
     looptijd: document.getElementById("looptijd").value.trim(),
     projectnummer: document.getElementById("projectnummer").value.trim(),
-    locatie: document.getElementById("locatie").value.trim(),
-    verantwoordelijke: document.getElementById("verantwoordelijke").value.trim(),
+    risicoP9: document.getElementById("risicoP9").value.trim(),
+    kansP9: document.getElementById("kansP9").value,
+    ernstP9: document.getElementById("ernstP9").value,
+    maatregelP9: document.getElementById("maatregelP9").value.trim(),
+    restrisicoP9: document.getElementById("restrisicoP9").value.trim(),
   };
 
   // ripple effect
