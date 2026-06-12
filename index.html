@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RI&E Generator — Demosite RWZI Leeuwarden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+  :root{
+    --ink:#08242A;
+    --surface:#0F3038;
+    --surface-2:#143C45;
+    --surface-glass: rgba(20,60,69,0.55);
+    --line: rgba(143,214,209,0.18);
+    --line-strong: rgba(143,214,209,0.35);
+    --text: #EAF6F4;
+    --text-dim: #9FC4C2;
+    --text-faint: #6E9A98;
+    --accent: #5FD8D0;
+    --accent-2: #B6F0EA;
+    --amber: #F0A94E;
+    --amber-dim: rgba(240,169,78,0.18);
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    min-height:100vh;
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  body{
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- BACKGROUND ---------- */
+  .bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background:
+      radial-gradient(1100px 800px at 78% 12%, rgba(95,216,208,0.10), transparent 60%),
+      radial-gradient(900px 700px at 10% 90%, rgba(95,216,208,0.07), transparent 55%),
+      linear-gradient(160deg, #07191F 0%, #0A2A30 45%, #0C3138 100%);
+  }
+
+  .bg svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0.5;
+  }
+
+  .bg .grid-overlay{
+    position:absolute;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(95,216,208,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(95,216,208,0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .page{
+    position:relative;
+    z-index:1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+
+  .top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:32px;
+    margin-bottom:48px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+
+  .brand-mark{
+    width:46px; height:46px;
+    flex-shrink:0;
+  }
+
+  .brand-text .eyebrow{
+    font-family: var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color: var(--accent);
+    margin:0 0 4px;
+  }
+
+  .brand-text h1{
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+    line-height:1.15;
+  }
+
+  .brand-text p{
+    margin:6px 0 0;
+    font-size:13.5px;
+    color: var(--text-dim);
+    max-width:46ch;
+    line-height:1.5;
+  }
+
+  .meta-pills{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .pill{
+    font-family: var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.04em;
+    padding:7px 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    color: var(--text-dim);
+    background: var(--surface-glass);
+    white-space:nowrap;
+  }
+
+  /* ---------- GRID ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns: 1.05fr 1.4fr;
+    gap:28px;
+    align-items:start;
+  }
+
+  @media (max-width: 920px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- PANEL (shared card style) ---------- */
+  .panel{
+    position:relative;
+    background: var(--surface-glass);
+    border:1px solid var(--line);
+    border-radius:18px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    overflow:hidden;
+  }
+
+  .panel::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:1px;
+    background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+  }
+
+  /* ---------- INTRO PANEL ---------- */
+  .intro-panel{
+    padding:32px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+
+  .intro-panel h2{
+    font-family: var(--font-display);
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .intro-panel h2 .num{
+    font-family: var(--font-mono);
+    font-size:12px;
+    color: var(--ink);
+    background: var(--accent);
+    width:24px; height:24px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+
+  .intro-panel p{
+    font-size:13.5px;
+    line-height:1.65;
+    color: var(--text-dim);
+    margin:0;
+  }
+
+  .intro-panel ul{
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .intro-panel li{
+    font-size:13px;
+    line-height:1.5;
+    color: var(--text-dim);
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .drop{
+    flex-shrink:0;
+    margin-top:5px;
+    width:8px; height:11px;
+    background: var(--accent);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(45deg);
+    opacity:0.7;
+  }
+
+  .divider{
+    height:1px;
+    background: var(--line);
+    border:none;
+    margin:0;
+  }
+
+  .legend{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .legend-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:12.5px;
+    color:var(--text-dim);
+  }
+
+  .legend-swatch{
+    width:14px; height:14px;
+    border-radius:4px;
+    flex-shrink:0;
+  }
+
+  .sw-green{ background:#9FE1CB; }
+  .sw-yellow{ background:#F0A94E; }
+  .sw-red{ background:#E27272; }
+
+  .legend-row strong{
+    color: var(--text);
+    font-weight:500;
+  }
+
+  /* ---------- FORM PANEL ---------- */
+  .form-panel{
+    padding:36px;
+  }
+
+  .form-panel h2{
+    font-family: var(--font-display);
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 6px;
+  }
+
+  .form-sub{
+    font-size:13.5px;
+    color: var(--text-dim);
+    margin:0 0 28px;
+  }
+
+  .field-group{
+    margin-bottom:22px;
+  }
+
+  .field-group label{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    font-size:12.5px;
+    font-weight:500;
+    color: var(--accent-2);
+    letter-spacing:0.02em;
+    margin-bottom:8px;
+    font-family: var(--font-mono);
+  }
+
+  .field-group label .hint{
+    font-family: var(--font-body);
+    font-weight:400;
+    font-size:11.5px;
+    color: var(--text-faint);
+  }
+
+  .field-group input,
+  .field-group textarea{
+    width:100%;
+    background: rgba(8,36,42,0.55);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size:14.5px;
+    padding:12px 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    resize: vertical;
+  }
+
+  .field-group textarea{
+    min-height:110px;
+    line-height:1.55;
+  }
+
+  .field-group input::placeholder,
+  .field-group textarea::placeholder{
+    color: var(--text-faint);
+  }
+
+  .field-group input:focus,
+  .field-group textarea:focus{
+    outline:none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(95,216,208,0.14);
+    background: rgba(8,36,42,0.8);
+  }
+
+  .row-2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:18px;
+  }
+
+  @media (max-width:560px){
+    .row-2{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- LOCKED FIELDS PREVIEW ---------- */
+  .locked-block{
+    margin-top:6px;
+    padding:18px 20px;
+    border-radius:12px;
+    border:1px dashed var(--line-strong);
+    background: rgba(95,216,208,0.04);
+  }
+
+  .locked-block .locked-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family: var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color: var(--text-faint);
+    margin-bottom:12px;
+  }
+
+  .lock-icon{
+    width:13px; height:13px;
+    opacity:0.7;
+  }
+
+  .locked-rows{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .locked-row{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    font-size:13px;
+  }
+
+  .locked-row span:first-child{
+    color: var(--text-dim);
+  }
+
+  .locked-row span:last-child{
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size:12.5px;
+    text-align:right;
+  }
+
+  /* ---------- ACTION ---------- */
+  .action-row{
+    margin-top:32px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+
+  .generate-btn{
+    position:relative;
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:0.01em;
+    color: var(--ink);
+    background: var(--accent);
+    border:none;
+    border-radius:12px;
+    padding:15px 30px;
+    cursor:pointer;
+    overflow:hidden;
+    transition: transform 0.12s ease, background 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .generate-btn:hover{
+    background: var(--accent-2);
+  }
+
+  .generate-btn:active{
+    transform: scale(0.98);
+  }
+
+  .generate-btn .ripple{
+    position:absolute;
+    border-radius:50%;
+    background: rgba(8,36,42,0.35);
+    transform: scale(0);
+    animation: ripple-anim 0.7s ease-out forwards;
+    pointer-events:none;
+  }
+
+  @keyframes ripple-anim{
+    to{
+      transform: scale(1);
+      opacity:0;
+    }
+  }
+
+  .generate-btn svg{
+    width:18px; height:18px;
+    flex-shrink:0;
+  }
+
+  .status-text{
+    font-size:12.5px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:18px;
+  }
+
+  .status-dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background: var(--text-faint);
+    flex-shrink:0;
+    transition: background 0.2s ease;
+  }
+
+  .status-dot.ok{
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(95,216,208,0.18);
+  }
+
+  .status-dot.busy{
+    background: var(--amber);
+    animation: pulse 1s infinite ease-in-out;
+  }
+
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+
+  /* ---------- FOOTER ---------- */
+  .footnote{
+    margin-top:40px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color: var(--text-faint);
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    font-family: var(--font-mono);
+  }
+
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5FD8D0" stop-opacity="0.35"/>
+        <stop offset="1" stop-color="#5FD8D0" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+
+    <g stroke="#5FD8D0" stroke-opacity="0.16" fill="none" stroke-width="1.2">
+      <circle cx="1180" cy="160" r="60"/>
+      <circle cx="1180" cy="160" r="120"/>
+      <circle cx="1180" cy="160" r="180"/>
+      <circle cx="1180" cy="160" r="240"/>
+      <circle cx="1180" cy="160" r="300"/>
+    </g>
+
+    <g stroke="#5FD8D0" stroke-opacity="0.10" fill="none" stroke-width="1.2">
+      <circle cx="120" cy="820" r="50"/>
+      <circle cx="120" cy="820" r="105"/>
+      <circle cx="120" cy="820" r="165"/>
+      <circle cx="120" cy="820" r="230"/>
+    </g>
+
+    <path d="M -50 250 C 250 180, 450 320, 760 240 S 1250 120, 1500 220" stroke="url(#flowGrad)" stroke-width="2" fill="none"/>
+    <path d="M -50 420 C 300 360, 520 480, 800 420 S 1200 320, 1500 400" stroke="#5FD8D0" stroke-opacity="0.10" stroke-width="1.5" fill="none"/>
+    <path d="M -50 700 C 280 640, 540 760, 850 690 S 1260 600, 1500 680" stroke="#5FD8D0" stroke-opacity="0.08" stroke-width="1.5" fill="none"/>
+
+    <g fill="#5FD8D0">
+      <circle cx="220" cy="120" r="2" opacity="0.4"/>
+      <circle cx="340" cy="200" r="1.4" opacity="0.3"/>
+      <circle cx="480" cy="90" r="1.8" opacity="0.35"/>
+      <circle cx="900" cy="540" r="2" opacity="0.3"/>
+      <circle cx="1020" cy="650" r="1.5" opacity="0.25"/>
+      <circle cx="640" cy="780" r="1.8" opacity="0.3"/>
+      <circle cx="1310" cy="470" r="1.6" opacity="0.3"/>
+      <circle cx="180" cy="540" r="1.4" opacity="0.25"/>
+    </g>
+
+    <g fill="none" stroke="#5FD8D0" stroke-opacity="0.14" stroke-width="1.2">
+      <path d="M700 60 v36 M682 78 h36" />
+      <path d="M260 760 v30 M245 775 h30" />
+      <path d="M1340 740 v30 M1325 755 h30" />
+    </g>
+  </svg>
+  <div class="grid-overlay"></div>
+</div>
+
+<div class="page">
+
+  <div class="top">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="none" stroke="#5FD8D0" stroke-opacity="0.35" stroke-width="1.4"/>
+        <circle cx="24" cy="24" r="15" fill="none" stroke="#5FD8D0" stroke-opacity="0.5" stroke-width="1.4"/>
+        <path d="M24 11 C24 11 14 22 14 29 C14 35 18.5 39 24 39 C29.5 39 34 35 34 29 C34 22 24 11 24 11 Z" fill="#5FD8D0" fill-opacity="0.85"/>
+      </svg>
+      <div class="brand-text">
+        <p class="eyebrow">CEW &times; Wetterskip Fryslân</p>
+        <h1>RI&amp;E generator — Demosite RWZI Leeuwarden</h1>
+        <p>Vul de projectgegevens in en genereer direct een opgemaakte Risico-Inventarisatie &amp; -Evaluatie (PDF), gebaseerd op het vaste Demosite-format uit Bijlage 4.</p>
+      </div>
+    </div>
+    <div class="meta-pills">
+      <span class="pill">Bijlage 4 · Deel A/B/C</span>
+      <span class="pill">Fine &amp; Kinney</span>
+      <span class="pill">v1.0</span>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="panel intro-panel">
+      <div>
+        <h2><span class="num">1</span>Wat deze RI&amp;E bevat</h2>
+        <p>De gegenereerde RI&amp;E volgt het vaste sjabloon van de Demosite en bestaat uit een vaste basis met algemene risico's, plus een introductie die per project wordt ingevuld.</p>
+      </div>
+
+      <ul>
+        <li><span class="drop"></span>Introductie met klant, projectomschrijving, looptijd en locatie</li>
+        <li><span class="drop"></span>Methodiek &amp; risicoclassificatie (Fine &amp; Kinney)</li>
+        <li><span class="drop"></span>Algemene Demosite-risico's (H2S, vallen, elektra, verkeer, etc.)</li>
+        <li><span class="drop"></span>Projectspecifieke PFAS-/laboratoriumrisico's</li>
+        <li><span class="drop"></span>Borging, studentenparagraaf en aanbevelingen</li>
+        <li><span class="drop"></span>Ondertekenblok — namen, datum en paraaf blijven open</li>
+      </ul>
+
+      <hr class="divider">
+
+      <div>
+        <h2 style="margin-bottom:14px;"><span class="num">2</span>Risicoclassificatie</h2>
+        <div class="legend">
+          <div class="legend-row"><span class="legend-swatch sw-green"></span><strong>1–4</strong>&nbsp;Aanvaardbaar — standaard beheersmaatregelen volstaan</div>
+          <div class="legend-row"><span class="legend-swatch sw-yellow"></span><strong>5–12</strong>&nbsp;Aandachtsgebied — extra toezicht en instructie</div>
+          <div class="legend-row"><span class="legend-swatch sw-red"></span><strong>13–25</strong>&nbsp;Onaanvaardbaar — werk start niet zonder herontwerp</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div>
+        <h2 style="margin-bottom:10px;"><span class="num">3</span>Blijft altijd open</h2>
+        <p>Onderstaande velden worden bewust leeg gelaten in elke PDF, voor invulling op de Demosite zelf:</p>
+        <div class="locked-block" style="margin-top:14px;">
+          <div class="locked-title">
+            <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Vrij te laten velden
+          </div>
+          <div class="locked-rows">
+            <div class="locked-row"><span>PhD-onderzoeker / projectleider CEW</span><span>n.t.b.</span></div>
+            <div class="locked-row"><span>Datum opstellen RI&amp;E</span><span>[in te vullen]</span></div>
+            <div class="locked-row"><span>Geaccordeerd door KAM-Wetterskip op</span><span>[datum + paraaf]</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel form-panel">
+      <h2>Projectgegevens</h2>
+      <p class="form-sub">Deze gegevens vormen de introductie van de RI&amp;E. De rest van het document wordt automatisch ingevuld op basis van het vaste Demosite-sjabloon.</p>
+
+      <form id="rieForm">
+        <div class="row-2">
+          <div class="field-group">
+            <label for="klantnaam">Klantnaam <span class="hint">organisatie</span></label>
+            <input type="text" id="klantnaam" placeholder="Bijv. Gemeente Leeuwarden" required>
+          </div>
+          <div class="field-group">
+            <label for="contactpersoon">Contactpersoon <span class="hint">naam &amp; rol</span></label>
+            <input type="text" id="contactpersoon" placeholder="Bijv. Dhr. Gosse Hoekstra" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="projectomschrijving">Projectomschrijving <span class="hint">doel, scope en werkzaamheden</span></label>
+          <textarea id="projectomschrijving" placeholder="Beschrijf het onderzoek of project op de Demosite: doel, scope, betrokken installaties en werkzaamheden..." required></textarea>
+        </div>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label for="looptijd">Looptijd project <span class="hint">periode</span></label>
+            <input type="text" id="looptijd" placeholder="Bijv. Maart 2026 t/m juni 2026" required>
+          </div>
+          <div class="field-group">
+            <label for="projectnummer">Projectnummer <span class="hint">optioneel</span></label>
+            <input type="text" id="projectnummer" placeholder="Bijv. 2026.P.0005">
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label for="locatie">Locatie op Demosite <span class="hint">onderzoeksplaats</span></label>
+            <input type="text" id="locatie" placeholder="Bijv. Demosite RWZI Leeuwarden, Greunsweg 78">
+          </div>
+          <div class="field-group">
+            <label for="verantwoordelijke">Verantwoordelijke namens Gebruiker <span class="hint">naam &amp; organisatie</span></label>
+            <input type="text" id="verantwoordelijke" placeholder="Bijv. Dhr. Gosse Hoekstra (Gemeente Leeuwarden)">
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="submit" class="generate-btn" id="generateBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>
+            Genereer RI&amp;E PDF
+          </button>
+          <div class="status-text"><span class="status-dot" id="statusDot"></span><span id="statusText">Vul de velden in en genereer het document</span></div>
+        </div>
+      </form>
+
+      <div class="footnote">
+        <span>Sjabloon · Bijlage 4 Veiligheid op de Demosite, v1.0</span>
+        <span>Output · PDF, A4, direct downloadbaar</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+const COLORS = {
+  header: rgb(0x1F/255, 0x4E/255, 0x5F/255),
+  green: rgb(0xC6/255, 0xEF/255, 0xCE/255),
+  yellow: rgb(0xFF/255, 0xEB/255, 0x9C/255),
+  red: rgb(0xFF/255, 0xC7/255, 0xCE/255),
+  infoBg: rgb(0xE8/255, 0xF1/255, 0xF4/255),
+  grid: rgb(0.55,0.55,0.55),
+  text: rgb(0.1,0.1,0.1),
+  white: rgb(1,1,1)
+};
+
+function scoreColor(score){
+  if(score <= 4) return COLORS.green;
+  if(score <= 12) return COLORS.yellow;
+  return COLORS.red;
+}
+
+function wrapText(text, font, size, maxWidth){
+  const words = text.split(/\s+/);
+  const lines = [];
+  let current = "";
+  for(const w of words){
+    const test = current ? current + " " + w : w;
+    if(font.widthOfTextAtSize(test, size) > maxWidth && current){
+      lines.push(current);
+      current = w;
+    } else {
+      current = test;
+    }
+  }
+  if(current) lines.push(current);
+  return lines;
+}
+
+class PDFBuilder{
+  constructor(doc, fonts){
+    this.doc = doc;
+    this.fonts = fonts;
+    this.pageW = 595.28;
+    this.pageH = 841.89;
+    this.marginX = 51;
+    this.marginTop = 57;
+    this.marginBottom = 51;
+    this.page = null;
+    this.y = 0;
+    this.newPage();
+  }
+  newPage(){
+    this.page = this.doc.addPage([this.pageW, this.pageH]);
+    this.y = this.pageH - this.marginTop;
+  }
+  ensure(spaceNeeded){
+    if(this.y - spaceNeeded < this.marginBottom){
+      this.newPage();
+    }
+  }
+  text(str, {x=this.marginX, size=10, font=this.fonts.body, color=COLORS.text, gap=4, maxWidth=null, lineHeight=null} = {}){
+    const lh = lineHeight || size*1.35;
+    let lines = [str];
+    if(maxWidth){
+      lines = wrapText(str, font, size, maxWidth);
+    }
+    for(const line of lines){
+      this.ensure(lh);
+      this.page.drawText(line, { x, y: this.y - size, size, font, color });
+      this.y -= lh;
+    }
+    this.y -= gap;
+  }
+  heading(str, level=1){
+    if(level === 1){
+      this.ensure(34);
+      this.y -= 6;
+      this.text(str, { size: 15, font: this.fonts.bold, color: COLORS.header, gap: 8 });
+    } else {
+      this.ensure(26);
+      this.y -= 4;
+      this.text(str, { size: 12.5, font: this.fonts.bold, color: COLORS.header, gap: 6 });
+    }
+  }
+  bullet(str, indent=14){
+    const maxWidth = this.pageW - this.marginX*2 - indent;
+    const lines = wrapText(str, this.fonts.body, 9.5, maxWidth);
+    lines.forEach((line, i) => {
+      this.ensure(13);
+      const prefix = i === 0 ? "\u2022  " : "    ";
+      this.page.drawText(prefix + line, { x: this.marginX, y: this.y - 9.5, size: 9.5, font: this.fonts.body, color: COLORS.text });
+      this.y -= 13;
+    });
+    this.y -= 1;
+  }
+  spacer(h){ this.y -= h; }
+  pageBreak(){ this.newPage(); }
+
+  table(columns, rows, opts={}){
+    const totalWidth = this.pageW - this.marginX*2;
+    const colWidths = columns.map(c => c.width * totalWidth);
+    const fontSize = opts.fontSize || 8.5;
+    const cellPad = 4;
+    const rowHeights = rows.map(row => {
+      let maxLines = 1;
+      row.cells.forEach((cell, i) => {
+        const w = colWidths[i] - cellPad*2;
+        const lines = wrapText(String(cell.text), this.fonts.body, fontSize, w);
+        maxLines = Math.max(maxLines, lines.length);
+      });
+      return maxLines * (fontSize+3) + cellPad*2;
+    });
+
+    // header row
+    const headerHeight = (fontSize+3) + cellPad*2;
+    this.drawTableRow(columns.map(c => ({text: c.label})), colWidths, headerHeight, fontSize, true, null, totalWidth);
+
+    rows.forEach((row, idx) => {
+      this.drawTableRow(row.cells, colWidths, rowHeights[idx], fontSize, false, row.highlights || (row.highlightCol ? [row.highlightCol] : null), totalWidth);
+    });
+    this.y -= 8;
+  }
+
+  drawTableRow(cells, colWidths, height, fontSize, isHeader, highlights, totalWidth){
+    this.ensure(height);
+    let x = this.marginX;
+    const yTop = this.y;
+    // background
+    if(isHeader){
+      this.page.drawRectangle({ x: this.marginX, y: yTop - height, width: totalWidth, height, color: COLORS.header });
+    }
+    cells.forEach((cell, i) => {
+      const w = colWidths[i];
+      const hl = !isHeader && highlights ? highlights.find(h => h.col === i) : null;
+      if(hl){
+        this.page.drawRectangle({ x, y: yTop - height, width: w, height, color: hl.color });
+      }
+      const font = isHeader ? this.fonts.bold : this.fonts.body;
+      const color = isHeader ? COLORS.white : COLORS.text;
+      const lines = wrapText(String(cell.text), font, fontSize, w - 8);
+      let ty = yTop - fontSize - 3;
+      lines.forEach(line => {
+        this.page.drawText(line, { x: x + 4, y: ty, size: fontSize, font, color });
+        ty -= (fontSize + 3);
+      });
+      x += w;
+    });
+    // grid lines
+    let gx = this.marginX;
+    this.page.drawLine({ start:{x:this.marginX, y:yTop}, end:{x:this.marginX+totalWidth, y:yTop}, thickness:0.5, color:COLORS.grid });
+    this.page.drawLine({ start:{x:this.marginX, y:yTop-height}, end:{x:this.marginX+totalWidth, y:yTop-height}, thickness:0.5, color:COLORS.grid });
+    colWidths.forEach(w => {
+      this.page.drawLine({ start:{x:gx, y:yTop}, end:{x:gx, y:yTop-height}, thickness:0.5, color:COLORS.grid });
+      gx += w;
+    });
+    this.page.drawLine({ start:{x:gx, y:yTop}, end:{x:gx, y:yTop-height}, thickness:0.5, color:COLORS.grid });
+
+    this.y -= height;
+  }
+
+  infoTable(rows){
+    const totalWidth = this.pageW - this.marginX*2;
+    const labelW = totalWidth * 0.35;
+    const valueW = totalWidth * 0.65;
+    rows.forEach(([label, value]) => {
+      const labelLines = wrapText(label, this.fonts.bold, 9, labelW-8);
+      const valueLines = wrapText(value, this.fonts.body, 9, valueW-8);
+      const lines = Math.max(labelLines.length, valueLines.length);
+      const height = lines*12 + 8;
+      this.ensure(height);
+      const yTop = this.y;
+      this.page.drawRectangle({ x:this.marginX, y:yTop-height, width:labelW, height, color: COLORS.infoBg });
+      labelLines.forEach((line,i) => this.page.drawText(line, {x:this.marginX+4, y:yTop-12-i*12, size:9, font:this.fonts.bold, color:COLORS.text}));
+      valueLines.forEach((line,i) => this.page.drawText(line, {x:this.marginX+labelW+4, y:yTop-12-i*12, size:9, font:this.fonts.body, color:COLORS.text}));
+      // borders
+      this.page.drawRectangle({ x:this.marginX, y:yTop-height, width:totalWidth, height, borderColor:COLORS.grid, borderWidth:0.5, color: undefined });
+      this.page.drawLine({ start:{x:this.marginX+labelW,y:yTop}, end:{x:this.marginX+labelW,y:yTop-height}, thickness:0.5, color:COLORS.grid});
+      this.y -= height;
+    });
+    this.y -= 8;
+  }
+}
+
+function buildContent(b, data){
+  // ---------- TITLE PAGE / INTRO ----------
+  b.text("Risico-Inventarisatie & -Evaluatie (RI&E)", { size: 18, font: b.fonts.bold, color: COLORS.header, gap: 4 });
+  b.text("Project op de Demosite RWZI Leeuwarden", { size: 12, font: b.fonts.body, color: COLORS.header, gap: 16 });
+
+  b.infoTable([
+    ["Klant / Opdrachtgever", data.klantnaam],
+    ["Contactpersoon", data.contactpersoon],
+    ["Projectnummer", data.projectnummer || "[niet opgegeven]"],
+    ["Looptijd project", data.looptijd],
+    ["Locatie", data.locatie || "Demosite RWZI Leeuwarden, Greunsweg 78, Leeuwarden"],
+    ["Verantwoordelijke namens Gebruiker", data.verantwoordelijke || "[in te vullen]"],
+    ["PhD-onderzoeker / projectleider CEW", ""],
+    ["Datum opstellen RI&E", ""],
+    ["Geaccordeerd door KAM-Wetterskip op", ""],
+  ]);
+
+  b.heading("1. Projectomschrijving", 2);
+  b.text(`Klant: ${data.klantnaam}, vertegenwoordigd door ${data.contactpersoon}.`, { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 5, font: b.fonts.bold });
+  b.text(`Projectbeschrijving: ${data.projectomschrijving}`, { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 5 });
+  b.text(`Looptijd: ${data.looptijd}.`, { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 5 });
+  b.text("De werkzaamheden worden uitgevoerd door studenten/onderzoekers onder directe begeleiding van een PhD-onderzoeker van het Center of Expertise Watertechnology (CEW), conform Bijlage 4 (Veiligheid op de Demosite) bij de Samenwerkingsovereenkomst Demosite RWZI Leeuwarden.", { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 8 });
+
+  b.heading("Werkzaamheden op de Demosite", 2);
+  [
+    "Opstelling en testen van projectinstallatie / meetapparatuur",
+    "Bemonstering van influent- en effluentwater",
+    "Monitoring van procesparameters",
+    "Onderhoud en kalibratie van meetapparatuur",
+    "Documentatie en rapportage van testresultaten"
+  ].forEach(w => b.bullet(w));
+  b.spacer(4);
+
+  b.heading("Betrokken personen", 2);
+  [
+    "Studenten (wisselende bezetting)",
+    "PhD-onderzoeker CEW (projectleider/begeleider)",
+    "RWZI-terreinbeheerder / dienstdoende operator",
+    "Eventuele externe adviseurs"
+  ].forEach(w => b.bullet(w));
+
+  // ---------- METHODIEK ----------
+  b.pageBreak();
+  b.heading("2. Methodiek", 2);
+  b.text("De risico-inschatting volgt de Fine & Kinney-systematiek (Risico = Kans x Blootstelling x Effect, vereenvoudigd weergegeven als Kans x Ernst). De beheersstrategie volgt de arbeidshygienische strategie: bron -> collectief -> individueel -> PBM.", { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 10 });
+
+  b.table(
+    [{label:"Score", width:0.13},{label:"Niveau", width:0.27},{label:"Toelichting", width:0.60}],
+    [
+      {cells:[{text:"1 - 4"},{text:"Aanvaardbaar (groen)"},{text:"Standaard beheersmaatregelen volstaan; toezicht volgens reguliere lijn."}], highlightCol:{col:1, color: COLORS.green}},
+      {cells:[{text:"5 - 12"},{text:"Aandachtsgebied (geel)"},{text:"Specifieke maatregelen, expliciete instructie, toezicht door PhD-onderzoeker; restrisico geaccordeerd door KAM."}], highlightCol:{col:1, color: COLORS.yellow}},
+      {cells:[{text:"13 - 25"},{text:"Onaanvaardbaar (rood)"},{text:"Werkzaamheden mogen niet starten; herontwerp werkmethode of aanvullende collectieve maatregelen vereist."}], highlightCol:{col:1, color: COLORS.red}},
+    ]
+  );
+
+  b.table(
+    [{label:"Kans", width:0.25},{label:"Score", width:0.1},{label:"Omschrijving", width:0.65}],
+    [
+      {cells:[{text:"Onwaarschijnlijk"},{text:"1"},{text:"Vrijwel uit te sluiten bij gebruikelijke werkwijze."}]},
+      {cells:[{text:"Mogelijk"},{text:"2"},{text:"Kan onder specifieke omstandigheden voorkomen."}]},
+      {cells:[{text:"Waarschijnlijk"},{text:"3"},{text:"Treedt regelmatig op bij dit type werk."}]},
+      {cells:[{text:"Vrij zeker"},{text:"4"},{text:"Is in vergelijkbare situaties al opgetreden."}]},
+      {cells:[{text:"Zeker"},{text:"5"},{text:"Treedt op zonder beheersmaatregel."}]},
+    ]
+  );
+
+  b.table(
+    [{label:"Ernst", width:0.25},{label:"Score", width:0.1},{label:"Omschrijving", width:0.65}],
+    [
+      {cells:[{text:"Verwaarloosbaar"},{text:"1"},{text:"Hooguit licht ongemak, geen verzuim."}]},
+      {cells:[{text:"Klein"},{text:"2"},{text:"EHBO-letsel, geen verzuim."}]},
+      {cells:[{text:"Matig"},{text:"3"},{text:"Behandelbaar letsel, kort verzuim, beperkte schade installatie."}]},
+      {cells:[{text:"Ernstig"},{text:"4"},{text:"Ziekenhuisopname, blijvend letsel mogelijk, of substantiele verstoring zuiveringsproces."}]},
+      {cells:[{text:"Catastrofaal"},{text:"5"},{text:"Dodelijk letsel, langdurige uitval RWZI, lozing buiten vergunninggrenzen."}]},
+    ]
+  );
+
+  // ---------- ALGEMENE RISICO'S ----------
+  b.pageBreak();
+  b.heading("3. Algemene risico's op de Demosite (uittreksel werkplek-RI&E)", 2);
+  b.text("Onderstaande risico's gelden voor iedere aanwezige op de Demosite. De Gebruiker bevestigt door ondertekening kennis te hebben genomen van deze risico's en de beheersmaatregelen te zullen naleven.", { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 10 });
+
+  const algemeneRisicos = [
+    ["1","Blootstelling aan H2S bij open processtromen / putten",2,5,"Gasdetectie verplicht, ventilatie, geen alleenwerk in zone, werkvergunning bij besloten ruimte, escape-set in zone aanwezig.","4 (groen)"],
+    ["2","Biologische blootstelling (huidcontact, aerosolen) afvalwater",3,3,"PBM (handschoenen, gelaatsbescherming bij spatten), handhygiene, vaccinatie hepatitis B aanbevolen, uitsluitend werken met intacte huid.","4 (groen)"],
+    ["3","Val van hoogte (loopbruggen, trappen, dak units)",2,4,"Vaste leuningen, geen werkzaamheden boven 2,5 m zonder valbeveiliging en werkvergunning, jaarlijkse inspectie loopvoorzieningen.","3 (groen)"],
+    ["4","Uitglijden / struikelen (nat, glad, kabels, slangen)",4,2,"Schoonhouden looproutes, kabelbruggen, signalering bij natte vloer, S3-schoeisel verplicht.","4 (groen)"],
+    ["5","Elektrocutie / aanraking onder spanning",2,5,"NEN 3140-keuring arbeidsmiddelen, alleen bevoegd personeel aan elektrische installaties, lock-out/tag-out bij onderhoud.","4 (groen)"],
+    ["6","Contact met draaiende delen (pompen, mixers)",2,4,"Vaste afschermingen, machineveiligheid CE, geen werkzaamheden tijdens draaien, signalering.","3 (groen)"],
+    ["7","Geluid > 80 dB(A) in pomp- en blowerruimten",3,2,"Bron-isolatie waar mogelijk, gehoorbescherming verplicht in aangewezen zones.","3 (groen)"],
+    ["8","Brand / ontploffing (ATEX-zones rond biogas)",1,5,"ATEX-zonering aangehouden, vonkvrij gereedschap in zone, geen heet werk zonder werkvergunning.","3 (groen)"],
+    ["9","Verkeer op terrein (vrachtwagens, heftrucks)",3,3,"Gescheiden voet- en rijroutes, signalerende kleding, snelheidsbeperking 15 km/u, achteruitrijden begeleid.","4 (groen)"],
+    ["10","Onbekendheid met locatie en procedures (nieuwkomers, studenten)",4,3,"Verplichte veiligheidsinstructie voor toegang, geen alleenwerk eerste twee weken, peer-buddysysteem, schriftelijke bevestiging instructie.","4 (groen)"],
+  ];
+
+  const riskCols = [
+    {label:"Nr.", width:0.035},
+    {label:"Risico", width:0.205},
+    {label:"Kans", width:0.05},
+    {label:"Ernst", width:0.05},
+    {label:"Score", width:0.06},
+    {label:"Beheersmaatregelen", width:0.47},
+    {label:"Restrisico", width:0.13},
+  ];
+
+  const restScoreNum = (restText) => {
+    const m = String(restText).match(/^(\d+)/);
+    return m ? parseInt(m[1], 10) : null;
+  };
+
+  b.table(riskCols, algemeneRisicos.map(([nr,risico,kans,ernst,maatregel,rest]) => {
+    const score = kans*ernst;
+    const restScore = restScoreNum(rest);
+    const highlights = [{col:4, color: scoreColor(score)}];
+    if(restScore !== null) highlights.push({col:6, color: scoreColor(restScore)});
+    return { cells:[{text:nr},{text:risico},{text:kans},{text:ernst},{text:score},{text:maatregel},{text:rest}], highlights };
+  }));
+
+  // ---------- PROJECTSPECIFIEKE RISICO'S ----------
+  b.pageBreak();
+  b.heading("4. Projectspecifieke risico's", 2);
+  b.text(`Onderstaande risico's zijn specifiek voor het project van ${data.klantnaam} op de Demosite. Deze tabel wordt door de Gebruiker en de PhD-onderzoeker van CEW gezamenlijk gecontroleerd en eventueel aangevuld voor projectstart.`, { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 10 });
+
+  const projectRisicos = [
+    ["P1","Contact met afvalwater / pathogenen tijdens bemonstering influent en effluent",3,3,"Verplichte PBM (nitrilhandschoenen, veiligheidsschoenen S3, werkkleding); strikte hygieneregels (handen wassen voor pauzes en na werkdag); vaccinatiestatus (Hepatitis A/B, DTP, Polio) vooraf gecontroleerd; open wonden direct desinfecteren en waterdicht afdekken."],
+    ["P2","Blootstelling aan H2S en andere gevaarlijke gassen nabij processtromen",2,5,"Gekalibreerde multigasmeter verplicht (H2S, CH4, O2, CO) bij betreden van risicozones; dagelijkse kalibratie en controle van de gasmeter; bij detectie onmiddellijk werkzaamheden stoppen en zone verlaten conform noodprocedure."],
+    ["P3","Vallen in bassins / verdrinkingsgevaar nabij open waterstromen",1,5,"Altijd binnen leuningwerk blijven; reddingsboeien en zwemtrappen voor aanvang werk lokaliseren; verplichte begeleiding voor studenten nabij open water; geen alleenwerk in deze zones."],
+    ["P4","Contact met chemicalien tijdens opstelling en bedrijf testapparatuur",2,3,"Specifieke PBM conform SDS-bladen testapparatuur (chemicalienbestendige handschoenen, gelaatsbescherming); SDS-kennis aanwezig en geraadpleegd voor gebruik; noodkit (oogspoeling, absorptiemateriaal) binnen handbereik."],
+    ["P5","Onervaren studenten werken zonder voldoende toezicht bij opstelling/testen apparatuur",3,3,"Continue begeleiding door PhD-onderzoeker; PhD-onderzoeker blijft te allen tijde op de Demosite aanwezig tijdens studentwerkzaamheden; maximaal 4 studenten gelijktijdig op de Demosite; dagelijkse toolbox-meeting met risicobespreking."],
+    ["P6","Betreden van besloten ruimten bij onderhoud/kalibratie meetapparatuur",1,5,"Uitsluitend met geldige werkvergunning en aanwezigheid van een buitenwacht (mangatwacht); voorafgaande gasmeting verplicht; geen toegang voor studenten zonder gecertificeerde begeleider."],
+    ["P7","Elektrische risico's bij meetapparatuur in natte omgeving",2,4,"Apparatuur met passende IP-classificatie; aansluiting via aardlekschakelaar (FI); NEN 3140-conforme keuring van arbeidsmiddelen; geen reparaties aan elektrische installaties door studenten."],
+    ["P8","Onjuiste of onveilige registratie van aanwezigheid op de Demosite",2,2,"Registratie bij RWZI-beheerder bij in- en uitchecken (bij voorkeur digitaal check-in systeem); actueel overzicht van aanwezige personen beschikbaar voor BHV-doeleinden."],
+  ];
+
+  const restrisico = (score) => {
+    if(score <= 4) return `${Math.max(score-1,1)} (groen)`;
+    if(score <= 12) return `${score-4 >= 1 ? score-4 : 1} (${score-4<=4 ? "groen":"geel"})`;
+    return `${score-8} (geel)`;
+  };
+
+  b.table(riskCols, projectRisicos.map(([nr,risico,kans,ernst,maatregel]) => {
+    const score = kans*ernst;
+    const rest = restrisico(score);
+    const restScore = restScoreNum(rest);
+    const highlights = [{col:4, color: scoreColor(score)}];
+    if(restScore !== null) highlights.push({col:6, color: scoreColor(restScore)});
+    return { cells:[{text:nr},{text:risico},{text:kans},{text:ernst},{text:score},{text:maatregel},{text:rest}], highlights };
+  }).concat([
+    { cells:[{text:"P_..."},{text:"[verder in te vullen per project]"},{text:""},{text:""},{text:""},{text:""},{text:""}] }
+  ]));
+
+  // ---------- BORGING & STUDENTEN ----------
+  b.pageBreak();
+  b.heading("5. Beheersmaatregelen — uitvoering en borging", 2);
+  [
+    "De beheersmaatregelen uit hoofdstuk 3 en 4 worden voor projectstart geimplementeerd; de PhD-onderzoeker van CEW bevestigt de implementatie schriftelijk aan KAM-Wetterskip.",
+    "De PhD-onderzoeker is dagelijks toezichthouder en aanspreekpunt voor studenten en projectmedewerkers; hij/zij houdt een dag-logboek bij van afwijkingen en near-misses.",
+    "Wijziging van de werkmethode of toevoeging van nieuwe stoffen of stappen die niet in deze RI&E zijn voorzien, vereist actualisering van de RI&E en hernieuwde accordering door KAM-Wetterskip.",
+    "De RI&E wordt minimaal halfjaarlijks geevalueerd in de Werkgroep zolang het project loopt, en bij elk incident. Voor dit project wordt daarnaast een evaluatie na 3 maanden uitgevoerd."
+  ].forEach(t => b.bullet(t));
+  b.spacer(6);
+
+  b.heading("6. Specifieke aandacht — werken met studenten", 2);
+  [
+    "Studenten worden voor toelating individueel geintroduceerd door de PhD-onderzoeker bij de Wetterskip-operator van dienst.",
+    "Studenten ontvangen een schriftelijke werkinstructie, een lijst van toegestane en verboden handelingen, en een paklijst PBM. Zij ondertekenen deze documenten.",
+    "Studenten werken niet alleen op de Demosite. Bij fysieke handelingen aan de installatie is altijd een gecertificeerde begeleider aanwezig.",
+    "Werkzaamheden door studenten buiten reguliere kantooruren of in het weekend zijn niet toegestaan, behoudens uitdrukkelijke schriftelijke instemming van zowel CEW als Wetterskip, en uitsluitend onder fysieke begeleiding.",
+    "De PhD-onderzoeker evalueert wekelijks de leer- en veiligheidservaring met de student(en); bevindingen worden vastgelegd."
+  ].forEach(t => b.bullet(t));
+  b.spacer(6);
+
+  b.heading("7. Aanbevelingen", 2);
+  [
+    "Implementeer een digitaal check-in/check-out systeem voor aanwezigheidsregistratie.",
+    "Organiseer maandelijkse veiligheidsevaluaties tussen CEW en de Gebruiker.",
+    "Zorg voor back-up begeleiding bij afwezigheid van de PhD-onderzoeker.",
+    "Evalueer deze RI&E uiterlijk 3 maanden na aanvang van het project."
+  ].forEach(t => b.bullet(t));
+
+  // ---------- ONDERTEKENING ----------
+  b.pageBreak();
+  b.heading("8. Ondertekening RI&E", 2);
+  b.text("Door ondertekening van deze RI&E verklaren partijen kennis te hebben genomen van de geinventariseerde risico's en beheersmaatregelen, deze toepassing te geven gedurende het project, en wijzigingen onverwijld te melden voor herziening.", { size: 9.5, maxWidth: b.pageW - b.marginX*2, gap: 14 });
+
+  b.table(
+    [{label:"Rol", width:0.32},{label:"Naam", width:0.30},{label:"Datum", width:0.15},{label:"Handtekening", width:0.23}],
+    [
+      {cells:[{text:"Verantwoordelijke namens Gebruiker"},{text:data.verantwoordelijke || "[in te vullen]"},{text:""},{text:""}]},
+      {cells:[{text:"PhD-onderzoeker / projectleider CEW"},{text:""},{text:""},{text:""}]},
+      {cells:[{text:"KAM-Wetterskip — accordering"},{text:""},{text:""},{text:""}]},
+      {cells:[{text:"Voorzitter Werkgroep — eindcontrole"},{text:""},{text:""},{text:""}]},
+    ],
+    { fontSize: 9 }
+  );
+
+  b.spacer(10);
+  b.text("Toelichting voor invuller. Deze template volgt de eisen van Bijlage 4 (Deel A) van de Samenwerkingsovereenkomst Demosite RWZI Leeuwarden. Bij twijfel over inschatting of beheersmaatregel: KAM-Wetterskip vroegtijdig betrekken — een conservatieve inschatting verdient de voorkeur boven optimisme.", { size: 8.5, font: b.fonts.italic, color: rgb(0.35,0.35,0.35), maxWidth: b.pageW - b.marginX*2 });
+}
+
+async function generatePdf(data){
+  const doc = await PDFDocument.create();
+  const body = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const italic = await doc.embedFont(StandardFonts.HelveticaOblique);
+  const builder = new PDFBuilder(doc, { body, bold, italic });
+  buildContent(builder, data);
+  const bytes = await doc.save();
+  return bytes;
+}
+
+function downloadBlob(bytes, filename){
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+document.getElementById("rieForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("generateBtn");
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+
+  const data = {
+    klantnaam: document.getElementById("klantnaam").value.trim(),
+    contactpersoon: document.getElementById("contactpersoon").value.trim(),
+    projectomschrijving: document.getElementById("projectomschrijving").value.trim(),
+    looptijd: document.getElementById("looptijd").value.trim(),
+    projectnummer: document.getElementById("projectnummer").value.trim(),
+    locatie: document.getElementById("locatie").value.trim(),
+    verantwoordelijke: document.getElementById("verantwoordelijke").value.trim(),
+  };
+
+  // ripple effect
+  const rect = btn.getBoundingClientRect();
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+  const size = Math.max(rect.width, rect.height) * 1.8;
+  ripple.style.width = ripple.style.height = size + "px";
+  ripple.style.left = (rect.width/2 - size/2) + "px";
+  ripple.style.top = (rect.height/2 - size/2) + "px";
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 750);
+
+  statusDot.className = "status-dot busy";
+  statusText.textContent = "Document wordt opgebouwd...";
+  btn.disabled = true;
+
+  try{
+    await new Promise(r => setTimeout(r, 150));
+    const bytes = await generatePdf(data);
+    const safeName = (data.klantnaam || "Demosite").replace(/[^a-z0-9]+/gi, "_");
+    downloadBlob(bytes, `RIE_${safeName}.pdf`);
+    statusDot.className = "status-dot ok";
+    statusText.textContent = "PDF gegenereerd en gedownload";
+  } catch(err){
+    console.error(err);
+    statusDot.className = "status-dot";
+    statusText.textContent = "Er ging iets mis — controleer de console";
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
